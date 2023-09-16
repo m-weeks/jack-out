@@ -21,13 +21,16 @@ const config = {
   scene: {
     preload: preload,
     create: create,
-    update: gameTick
+    update: function (time, delta) {
+      gameTick(time, delta, this);
+    }
   }
 };
 
 let player = {
   x: 400,
   y: 300,
+  angle: 0,
   sprite: null,
 };
 let keys;
@@ -36,6 +39,7 @@ const game = new Phaser.Game(config);
 
 function preload() {
   this.load.image('player', '/assets/token.png');
+  this.load.image('bullet', '/assets/bullet.png');
 }
 
 function create() {

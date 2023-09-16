@@ -1,0 +1,9 @@
+services:
+  client:
+    image: oven/bun
+    command: bun run dev --host
+    working_dir: /app
+    volumes:
+      - ./client:/app
+    ports:
+      - 5173:5173
