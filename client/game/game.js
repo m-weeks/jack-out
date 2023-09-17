@@ -398,11 +398,14 @@ export const onStageChange = (oldState, newState) => {
   const { players } = newState;
   const { myPlayer } = localState;
 
-  if (!myPlayer) {
+  if (!myPlayer || !oldState || !newState) {
     return;
   }
 
   Object.values(players).forEach((player) => {
+    if (!oldState.players[player.id]) {
+      return;
+    }
     var oldHealth = oldState.players[player.id].health;
     var newHealth = player.health;
 
