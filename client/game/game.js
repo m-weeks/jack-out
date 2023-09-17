@@ -287,9 +287,21 @@ const renderPickups = (scene) => {
  * @param {Phaser.Scene} scene 
  */
 export function init(scene) {
-  const map = scene.make.tilemap({ data: LEVEL, tileWidth: TILE_SIZE, tileHeight: TILE_SIZE });
-  const tiles = map.addTilesetImage('tiles');
-  const layer = map.createLayer(0, tiles, 0, 0);
+  scene.anims.create({
+    key: 'tiles',
+    frames: scene.anims.generateFrameNumbers('tiles'),
+    frameRate: 10,
+    repeat: -1,
+  })
+
+  LEVEL.forEach((row, y) => {
+    row.forEach((col, x) => {
+      if (LEVEL[y][x] === 1) {
+        const tileSprite = scene.add.sprite(x * TILE_SIZE, y * TILE_SIZE, 'tile').setOrigin(0, 0);
+        tileSprite.play('tiles');
+      }
+    });
+  });
 }
 
 const syncPlayer = () => {

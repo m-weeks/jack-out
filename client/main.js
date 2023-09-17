@@ -2,6 +2,7 @@ import './style.css';
 import Phaser from 'phaser';
 import { gameTick, init } from './game/game';
 import './game/serverConnection';
+import { TILE_SIZE } from './game/constants';
 
 const config = {
   type: Phaser.AUTO,
@@ -36,8 +37,11 @@ function preload() {
   this.load.image('playerDead', '/assets/token_dead.png');
   this.load.image('bullet', '/assets/bullet.png');
   this.load.image('killed', '/assets/killed.png');
-  this.load.image('tiles', '/assets/tiles.png');
   this.load.image('dosh', '/assets/dosh.png');
+  this.load.spritesheet('tiles', '/assets/tilesheet.png', {
+    frameWidth: TILE_SIZE,
+    frameHeight: TILE_SIZE,
+  });
 
   this.load.audio('shot', '/assets/sounds/glock.wav');
   this.load.audio('pickup', '/assets/sounds/cash.wav');
