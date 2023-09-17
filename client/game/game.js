@@ -88,7 +88,9 @@ const doMovement = (delta, scene) => {
 const renderBullets = (time, delta, scene) => {
   const { keys } = viewState;
 
-  if (!localState.shooting && keys.pointer.leftButtonDown() && (time - localState.lastShotTime) > BULLET_COOLDOWN) {
+  const { myPlayer } = localState;
+
+  if (!localState.shooting && !localState.myPlayer.killed && keys.pointer.leftButtonDown() && (time - localState.lastShotTime) > BULLET_COOLDOWN) {
     localState.lastShotTime = time;
     localState.shooting = true;
     fireWeapon();
@@ -100,14 +102,25 @@ const renderBullets = (time, delta, scene) => {
   let destroyedIndexes = [];
 
   localState.projectiles.forEach((projectile, index) => {
-    projectile.x += projectile.velocityX * (delta / 1000);
-    projectile.y += projectile.velocityY * (delta / 1000);
-
     if (!projectile.sprite) {
+      // On client side spawn projectile from current position not last known server position
+      if (projectile.owner === myPlayer.id) {
+        projectile.x = myPlayer.x;
+        projectile.y = myPlayer.y;
+      }
+
       projectile.sprite = scene.physics.add.sprite(projectile.x, projectile.y, 'bullet');
       projectile.sprite.setRotation(projectile.angle);
       projectile.sprite.setScale(0.1);
+
+      // play sound when spawning projectile. Volume is proportional based on distance
+      const distance = Phaser.Math.Distance.Between(myPlayer.x, myPlayer.y, projectile.x, projectile.y);
+      let volume = 1 - Phaser.Math.Clamp(distance / 4000, 0, 1);
+      scene.sound.play('shot', { volume: volume / 3 });
     }
+
+    projectile.x += projectile.velocityX * (delta / 1000);
+    projectile.y += projectile.velocityY * (delta / 1000);
 
     projectile.sprite.setPosition(projectile.x, projectile.y);
 
@@ -250,9 +263,12 @@ const renderPickups = (scene) => {
 
     const curSprite = viewState.pickups[pickup.id];
 
-    if (!pickups[index].collected && isCollidingWithPlayer(curSprite.x, curSprite.y, 80)) {
-      pickups[index].collected = true;
+    const collected = Boolean(localState.collectedPickups.find((id) => id === pickup.id));
+    if (!collected && isCollidingWithPlayer(curSprite.x, curSprite.y, 80)) {
+      localState.collectedPickups.push(pickup.id);
+
       pickUpPickup(pickup.id);
+      scene.sound.play('pickup', { volume: 0.5 });
     }
   });
 
@@ -261,6 +277,7 @@ const renderPickups = (scene) => {
   const oldSprites = _.omit(viewState.pickups, pickupIds);
   for(var pickupId in oldSprites) {
     oldSprites[pickupId].destroy();
+    localState.collectedPickups = localState.collectedPickups.filter((id) => id !== pickupId);
     delete viewState.pickups[pickupId];
   }
 }

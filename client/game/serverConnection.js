@@ -15,6 +15,7 @@ export const localState = {
   lastShotTime: 0,
   projectiles: [],
   pickups: [],
+  collectedPickups: [],
 }
 
 const socket = new WebSocket('ws://websocket.weeks.guru:80');

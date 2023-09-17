@@ -38,6 +38,9 @@ function preload() {
   this.load.image('killed', '/assets/killed.png');
   this.load.image('tiles', '/assets/tiles.png');
   this.load.image('dosh', '/assets/dosh.png');
+
+  this.load.audio('shot', '/assets/sounds/glock.wav');
+  this.load.audio('pickup', '/assets/sounds/cash.wav');
 }
 
 // Resize game if window changes
