@@ -394,6 +394,38 @@ const syncPlayer = () => {
   }
 }
 
+export const onStageChange = (oldState, newState) => {
+  const { players } = newState;
+  const { myPlayer } = localState;
+
+  if (!myPlayer) {
+    return;
+  }
+
+  Object.values(players).forEach((player) => {
+    var oldHealth = oldState.players[player.id].health;
+    var newHealth = player.health;
+
+    if (newHealth < oldHealth) {
+      var emitter = viewState.scene.add.particles(player.x, player.y, 'bloodParticle', {
+        speed: { min: 150, max: 300 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 0.1, end: 0 },
+        lifespan: { min: 100, max: 200},
+        blendMode: 'ADD',
+        quantity: 50 ,
+        emitting: false,
+      });
+      emitter.explode();
+      if (player.id !== myPlayer.id) {
+        const distance = Phaser.Math.Distance.Between(myPlayer.x, myPlayer.y, player.x, player.y);
+        let volume = 1 - Phaser.Math.Clamp(distance / 3000, 0, 1);
+        viewState.scene.sound.play('oof', { volume: volume / 3 });
+      }
+    }
+  });
+}
+
 /**
  * 
  * @param {*} time 
@@ -402,6 +434,8 @@ const syncPlayer = () => {
  * @returns 
  */
 export function gameTick(time, delta, scene) {
+  viewState.scene = scene;
+
   if (!localState.loaded) {
     return;
   }
@@ -414,6 +448,7 @@ export function gameTick(time, delta, scene) {
   if (!myPlayer) {
     return;
   }
+  
 
   renderPickups(scene);
   renderTimer(scene);

@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { SPRINT_METER_AMOUNT } from './constants';
+import { onStageChange } from './game';
 
 // A local copy of the game state. Used as the client's source of truth. Will be periodically updated by the server
 export const gameState = {
@@ -38,8 +39,10 @@ socket.onmessage = (e) => {
   const msg = JSON.parse(e.data);
   
   if (msg.type === 'SYNC') {
+    var oldState = _.cloneDeep(gameState);
     _.assign(gameState, msg.data);
     localState.clientId = msg.clientId;
+    onStageChange(oldState, gameState);
   }
   if (msg.type === 'SPAWN_PROJECTILE') {
     localState.projectiles.push(msg.data);

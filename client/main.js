@@ -39,6 +39,7 @@ function preload() {
   this.load.image('killed', '/assets/killed.png');
   this.load.image('extracted', '/assets/extracted.png');
   this.load.image('dosh', '/assets/dosh.png');
+  this.load.image('bloodParticle', '/assets/blood_particle.png');
   this.load.spritesheet('tiles', '/assets/tilesheet.png', {
     frameWidth: TILE_SIZE,
     frameHeight: TILE_SIZE,
