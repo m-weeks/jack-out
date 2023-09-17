@@ -206,6 +206,7 @@ const renderPlayers = (scene) => {
     }
     playerSprites[player.id].setPosition(player.x, player.y);
     playerSprites[player.id].setRotation(player.angle);
+    playerSprites[player.id].__nametag.setPosition(player.x, player.y - 50);
   });
 
   const { myPlayer } = localState;
@@ -219,6 +220,7 @@ const renderPlayers = (scene) => {
   const playerIds = Object.keys(gameState.players);
   const oldSprites = _.omit(playerSprites, playerIds);
   for(var playerId in oldSprites) {
+    oldSprites[playerId].__nametag.destroy();
     oldSprites[playerId].destroy();
     delete playerSprites[playerId];
   }
