@@ -15,4 +15,4 @@ services:
     volumes:
       - ./server:/app
     ports:
-      - 3000:3000
+      - 5174:5174

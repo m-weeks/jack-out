@@ -18,7 +18,8 @@ export const localState = {
   collectedPickups: [],
 }
 
-const socket = new WebSocket('ws://websocket.weeks.guru:80');
+// const socket = new WebSocket('ws://websocket.weeks.guru:80');
+const socket = new WebSocket('ws://localhost:5174');
 
 socket.onopen = (e) => {
   console.log('Connected');

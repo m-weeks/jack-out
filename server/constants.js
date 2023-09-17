@@ -1,5 +1,5 @@
 export const TILE_SIZE = 160;
-export const BULLET_VELOCITY = 1500;
+export const BULLET_VELOCITY = 2500;
 export const LOBBY_SIZE = 16;
 export const MAX_PICKUPS = 30;
 // export const PLAYER_LIFETIME = 10000;
