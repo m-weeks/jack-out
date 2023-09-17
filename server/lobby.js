@@ -180,14 +180,12 @@ export const processHit = (clientId, killedById) => {
 
   if (player.health === 0) {
     player.killed = true;
-  }
-
-  
-  const killer = gameState.players[killedById];
-  if (killer) {
-    killer.score += player.score;
-    // Take all of the players score
-    player.score = 0;
+    const killer = gameState.players[killedById];
+    if (killer) {
+      killer.score += player.score;
+      // Take all of the players score
+      player.score = 0;
+    }
   }
 }
 

@@ -426,6 +426,21 @@ export const onStageChange = (oldState, newState) => {
         viewState.scene.sound.play('oof', { volume: volume / 3 });
       }
     }
+
+    var oldScore = oldState.players[player.id].score;
+    var newScore = player.score;
+    if (newScore < oldScore) {
+      var emitter = viewState.scene.add.particles(player.x, player.y, 'dosh', {
+        speed: { min: 30, max: 100 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 0.1, end: 0.15 },
+        lifespan: { min: 500, max: 500 },
+        blendMode: 'ADD',
+        quantity: oldState.players[player.id].score,
+        emitting: false,
+      });
+      emitter.explode();
+    }
   });
 }
 
@@ -466,7 +481,7 @@ export function gameTick(time, delta, scene) {
     viewState.finalScore = scoreText;
   }
 
-  if (currentPlayerState.expired) {
+  if (currentPlayerState.expired && !currentPlayerState.killed) {
     if (!viewState.expiredBanner) {
       var expiredBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'extracted');
       expiredBanner.setScrollFactor(0);
