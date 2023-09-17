@@ -2,23 +2,23 @@ import _ from 'lodash';
 
 // A local copy of the game state. Used as the client's source of truth. Will be periodically updated by the server
 export const gameState = {
-  started: false,
   players: {},
 };
 
 export const localState = {
+  loaded: false,
   clientId: undefined,
   myPlayer: null,
   shooting: false,
   lastShotTime: 0,
   projectiles: [],
-  killed: false,
 }
 
 const socket = new WebSocket('ws://localhost:3000');
 
 socket.onopen = (e) => {
   console.log('Connected');
+  localState.loaded = true;
   socket.send(JSON.stringify(
     {
       type: 'JOIN',
@@ -46,7 +46,7 @@ socket.onerror = (e) => {
   console.error('Socket error');
 }
 
-export const sendLocalState = (type, state) => {
+export const sendState = (type, state) => {
   socket.send(JSON.stringify(
     {
       type,
@@ -56,15 +56,15 @@ export const sendLocalState = (type, state) => {
 }
 
 export const syncMovement = () => {
-  sendLocalState('PLAYER_STATE', localState.myPlayer);
+  sendState('PLAYER_STATE', localState.myPlayer);
 }
 
 export const fireWeapon = () => {
-  sendLocalState('FIRE_WEAPON');
+  sendState('FIRE_WEAPON');
 }
 
 setInterval(() => {
-  if (gameState.started) {
+  if (localState.loaded) {
     syncMovement();
   }
 });

@@ -22,10 +22,12 @@ const server = Bun.serve({
       const msg = JSON.parse(message);
 
       if (msg.type === 'JOIN') {
-        addToLobby(ws, clientId, msg.data);
+        addToLobby(ws, clientId);
       }
       if (msg.type === 'PLAYER_STATE') {
-        updatePlayerState(clientId, msg.data);
+        //sanitize
+        const scrubbed = _.pick(msg.data, ['x', 'y', 'id', 'killed', 'angle']);
+        updatePlayerState(clientId, scrubbed);
       }
       if (msg.type === 'FIRE_WEAPON') {
         fireWeapon(clientId);

@@ -4,7 +4,6 @@ import { localState, gameState, fireWeapon } from './serverConnection';
 
 const viewState = {
   playerSprites: {},
-  waitingBanner: null,
   keys: null,
   layer: null,
 }
@@ -198,18 +197,6 @@ export function gameTick(time, delta, scene) {
   if (localState.killed) {
     var killedBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'killed');
     killedBanner.setScrollFactor(0);
-  }
-
-  if (!gameState.started) {
-    if (viewState.waitingBanner === null) {
-      viewState.waitingBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'waiting');
-      viewState.waitingBanner.setScrollFactor(0);
-    }
-
-    return;
-  } else if(viewState.waitingBanner) {
-    viewState.waitingBanner.destroy();
-    viewState.waitingBanner = null;
   }
 
   doMovement(delta, scene);

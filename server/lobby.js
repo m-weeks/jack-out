@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { BULLET_VELOCITY, LEVEL, TILE_SIZE } from './constants';
+import { BULLET_VELOCITY, LEVEL, TILE_SIZE, LOBBY_SIZE } from './constants';
 
 const lobby = {
   clients: {},
@@ -7,7 +7,6 @@ const lobby = {
 
 const initialGameState = {
   players: {},
-  started: false,
 };
 
 const gameState = _.cloneDeep(initialGameState);
@@ -45,10 +44,7 @@ const getStartingPosition = () => {
 };
 
 export const addToLobby = (ws, clientId) => {
-  if (gameState.started) {
-    console.log('GAME STARTED, REJECTING');
-  }
-  if (Object.keys(lobby.clients).length >= 4) {
+  if (Object.keys(lobby.clients).length >= LOBBY_SIZE) {
     console.log('LOBBY FULL, REJECTING');
     return;
   }
@@ -60,9 +56,8 @@ export const addToLobby = (ws, clientId) => {
   const player = {
     x: x,
     y: y,
-    lastShotTime: 0,
-    shooting: false,
-    bullets: [],
+    angle: 0,
+    killed: false,
     id: clientId,
   };
 
@@ -91,6 +86,10 @@ export const updatePlayerState = (clientId, newPlayerState) => {
 export const fireWeapon = (clientId) => {
   const player = gameState.players[clientId];
 
+  if (!player) {
+    return;
+  }
+
   const projectile = {
     x: player.x,
     y: player.y,
@@ -106,16 +105,7 @@ export const fireWeapon = (clientId) => {
   });
 }
 
-export const startGame = () => {
-  lobbyData.startedAt = Date.now();
-  lobbyData.started = true;
-}
-
 export const updateClients = () => {
-  if (!gameState.started && Object.keys(gameState.players).length >= 2) {
-    gameState.started = true;
-    console.log('STARTING GAME');
-  }
   broadcastMsg({
     type: 'SYNC',
     data: gameState,
