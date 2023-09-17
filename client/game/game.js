@@ -253,13 +253,27 @@ const renderScore = (scene) => {
   const { myPlayer } = localState;
   let score = myPlayer.score ?? 0;
 
+  let text = 'Lobby: \n';
+  const players = Object.values(gameState.players);
+
+  players.sort((player1, player2) => {
+    return player1.score > player2.score;
+  }).forEach((player) => {
+    if (player.id === myPlayer.id) {
+      text += `YOU: ${player.score}\n`;
+    } else {
+      text += `AGENT ${player.id}: ${player.score}\n`;
+    }
+  });
+
   if (viewState.scoreText) {
-    viewState.scoreText.setText(score);
+    viewState.scoreText.setText(text);
 
     return;
   }
 
-  const scoreText = scene.add.text(scene.scale.width - 50, scene.scale.height - 50, score, { fontSize: '32px', fill: '#fff', fontFamily: 'glitch goblin' });
+  const scoreText = scene.add.text(10, scene.scale.height / 2, text, { fontSize: '32px', fill: '#fff', fontFamily: 'glitch goblin' });
+  scoreText.setOrigin(0, 0.5);
   scoreText.setScrollFactor(0);
 
   viewState.scoreText = scoreText;
@@ -328,6 +342,9 @@ export function init(scene) {
       }
     });
   });
+
+  let music = scene.sound.add('song', { loop: true });
+  music.play({ volume: 0.25 });
 }
 
 const syncPlayer = () => {
