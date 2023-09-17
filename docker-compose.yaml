@@ -7,3 +7,12 @@ services:
       - ./client:/app
     ports:
       - 5173:5173
+    restart: always
+  server:
+    image: oven/bun
+    command: bun run dev
+    working_dir: /app
+    volumes:
+      - ./server:/app
+    ports:
+      - 3000:3000

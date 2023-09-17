@@ -1,0 +1,14 @@
+{
+  "name": "desync",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot run ./index.js",
+    "serve": "bun run ./index.js"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}

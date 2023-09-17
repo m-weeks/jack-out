@@ -1,7 +1,7 @@
 import './style.css';
 import Phaser from 'phaser';
-import { gameTick } from './game/game';
-import { initializePlayer } from './game/player';
+import { gameTick, init } from './game/game';
+import './game/serverConnection';
 
 const config = {
   type: Phaser.AUTO,
@@ -20,30 +20,23 @@ const config = {
   },
   scene: {
     preload: preload,
-    create: create,
+    create: function() {
+      init(this);
+    },
     update: function (time, delta) {
       gameTick(time, delta, this);
     }
   }
 };
 
-let player = {
-  x: 400,
-  y: 300,
-  angle: 0,
-  sprite: null,
-};
-let keys;
-
 const game = new Phaser.Game(config);
 
 function preload() {
   this.load.image('player', '/assets/token.png');
   this.load.image('bullet', '/assets/bullet.png');
-}
-
-function create() {
-  initializePlayer(this);
+  this.load.image('waiting', '/assets/waiting.png');
+  this.load.image('killed', '/assets/killed.png');
+  this.load.image('tiles', '/assets/tiles.png');
 }
 
 // Resize game if window changes
