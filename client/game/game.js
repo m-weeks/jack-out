@@ -226,7 +226,7 @@ const renderTimer = (scene) => {
 
   let seconds = Math.floor(myPlayer.lifetime / 1000);
 
-  const timer = scene.add.text(10, 10, seconds, { fontSize: '32px', fill: '#fff' });
+  const timer = scene.add.text(10, 10, `TIME REMAINING: ${seconds}`, { fontSize: '32px', fill: '#fff', fontFamily: 'glitch goblin' });
   timer.setScrollFactor(0);
 
   var event = scene.time.addEvent({
@@ -234,7 +234,7 @@ const renderTimer = (scene) => {
     loop: true,
     callback: () => {
       seconds = Math.max(0, --seconds);
-      timer.setText(seconds);
+      timer.setText(`TIME REMAINING: ${seconds}`);
 
       if (seconds === 0) {
         event.destroy();
@@ -259,7 +259,7 @@ const renderScore = (scene) => {
     return;
   }
 
-  const scoreText = scene.add.text(scene.scale.width - 50, scene.scale.height - 50, score, { fontSize: '32px', fill: '#fff' });
+  const scoreText = scene.add.text(scene.scale.width - 50, scene.scale.height - 50, score, { fontSize: '32px', fill: '#fff', fontFamily: 'glitch goblin' });
   scoreText.setScrollFactor(0);
 
   viewState.scoreText = scoreText;
@@ -275,7 +275,15 @@ const renderPickups = (scene) => {
   pickups.forEach((pickup, index) => {
     if (!(viewState.pickups[pickup.id])) {
       let sprite = scene.physics.add.sprite(pickup.x * TILE_SIZE + (TILE_SIZE / 2), pickup.y * TILE_SIZE + (TILE_SIZE / 2), 'dosh');
-      sprite.setScale(0.1);
+      sprite.setScale(0.2);
+      scene.tweens.add({
+        targets: sprite,
+        y: sprite.y + 25,
+        duration: Phaser.Math.Between(1000, 1500),
+        ease: 'Sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      });
       viewState.pickups[pickup.id] = sprite;
     }
 
@@ -360,9 +368,25 @@ export function gameTick(time, delta, scene) {
 
   const currentPlayerState = gameState.players[localState.clientId];
 
-  if (currentPlayerState.killed) {
-    var killedBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'killed');
-    killedBanner.setScrollFactor(0);
+  if ((currentPlayerState.expired || currentPlayerState.killed) && !viewState.finalScore) {
+    const scoreText = scene.add.text(scene.scale.width / 2.0, (scene.scale.height / 2.0) + 200, `Final Score: ${currentPlayerState.score}`, { fontSize: '48px', fill: '#0fff00', fontFamily: 'glitch goblin' });
+    scoreText.setScrollFactor(0);
+    scoreText.setOrigin(0.5, 0.5);
+    viewState.finalScore = scoreText;
+  }
+
+  if (currentPlayerState.expired) {
+    if (!viewState.expiredBanner) {
+      var expiredBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'extracted');
+      expiredBanner.setScrollFactor(0);
+      viewState.expiredBanner = expiredBanner;
+    }
+  } else if (currentPlayerState.killed) {
+    if (!viewState.killedBanner) {
+      var killedBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'killed');
+      killedBanner.setScrollFactor(0);
+      viewState.killedBanner = killedBanner;
+    }
   }
 
   doMovement(time, delta, scene);

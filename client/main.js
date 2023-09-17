@@ -37,6 +37,7 @@ function preload() {
   this.load.image('playerDead', '/assets/token_dead.png');
   this.load.image('bullet', '/assets/bullet.png');
   this.load.image('killed', '/assets/killed.png');
+  this.load.image('extracted', '/assets/extracted.png');
   this.load.image('dosh', '/assets/dosh.png');
   this.load.spritesheet('tiles', '/assets/tilesheet.png', {
     frameWidth: TILE_SIZE,
