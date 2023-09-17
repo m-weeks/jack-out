@@ -169,8 +169,10 @@ const renderPlayers = (scene) => {
   });
 
   const { myPlayer } = localState;
-  playerSprites[myPlayer.id].setPosition(myPlayer.x, myPlayer.y);
-  playerSprites[myPlayer.id].setRotation(myPlayer.angle);
+  if (myPlayer) {
+    playerSprites[myPlayer.id].setPosition(myPlayer.x, myPlayer.y);
+    playerSprites[myPlayer.id].setRotation(myPlayer.angle);
+  }
 
   // Clean old sprites
   const playerIds = Object.keys(gameState.players);
@@ -255,7 +257,7 @@ const renderPickups = (scene) => {
   });
 
   // Clean old sprites
-  const pickupIds = gameState.pickups.map((pickup) => pickup.id);
+  const pickupIds = (gameState.pickups).map((pickup) => pickup.id);
   const oldSprites = _.omit(viewState.pickups, pickupIds);
   for(var pickupId in oldSprites) {
     oldSprites[pickupId].destroy();
@@ -299,6 +301,12 @@ export function gameTick(time, delta, scene) {
   syncPlayer();
 
   renderPlayers(scene);
+
+  const { myPlayer } = localState;
+  if (!myPlayer) {
+    return;
+  }
+
   renderPickups(scene);
   renderTimer(scene);
   renderScore(scene);

@@ -4,6 +4,7 @@ import { addToLobby, fireWeapon, killPlayer, pickUpPickup, removeFromLobby, upda
 const clients = new Map();
 
 const server = Bun.serve({
+  port: 5174,
   fetch(req, server) {
     const success = server.upgrade(req);
     if (success) {

@@ -5,4 +5,4 @@ WORKDIR /app
 
 RUN bun install
 
-RUN bun run serve;
+CMD bun run serve;

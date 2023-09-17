@@ -3,6 +3,7 @@ import _ from 'lodash';
 // A local copy of the game state. Used as the client's source of truth. Will be periodically updated by the server
 export const gameState = {
   players: {},
+  pickups: [],
 };
 
 export const localState = {
@@ -16,7 +17,7 @@ export const localState = {
   pickups: [],
 }
 
-const socket = new WebSocket('ws://gamejam.weeks.guru:3000');
+const socket = new WebSocket('ws://websocket.weeks.guru:80');
 
 socket.onopen = (e) => {
   console.log('Connected');
