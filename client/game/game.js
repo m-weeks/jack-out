@@ -183,6 +183,13 @@ const renderPlayers = (scene) => {
 
       playerSprites[player.id].setPosition(player.x, player.y);
       playerSprites[player.id].setRotation(player.angle);
+      playerSprites[player.id].__nametag = scene.add.text(player.x, player.y - 50, player.name, {
+        fontSize: '14px',
+        fill: '#fff',
+        fontFamily: 'glitch goblin'
+      });
+      playerSprites[player.id].__nametag.alpha = 0.5;
+      playerSprites[player.id].__nametag.setOrigin(0.5, 1);
 
       // Make camera follow local player
       if(player.id === localState.clientId) {
@@ -205,6 +212,7 @@ const renderPlayers = (scene) => {
   if (myPlayer) {
     playerSprites[myPlayer.id].setPosition(myPlayer.x, myPlayer.y);
     playerSprites[myPlayer.id].setRotation(myPlayer.angle);
+    playerSprites[myPlayer.id].__nametag.setPosition(myPlayer.x, myPlayer.y - 50);
   }
 
   // Clean old sprites
@@ -264,7 +272,7 @@ const renderScore = (scene) => {
     if (player.id === myPlayer.id) {
       text += `YOU: ${player.score}\n`;
     } else {
-      text += `AGENT ${player.id}: ${player.score}\n`;
+      text += `${player.name}: ${player.score}\n`;
     }
   });
 
@@ -481,7 +489,7 @@ export function gameTick(time, delta, scene) {
     viewState.finalScore = scoreText;
   }
 
-  if (currentPlayerState.expired && !currentPlayerState.killed) {
+  if (currentPlayerState.expired) {
     if (!viewState.expiredBanner) {
       var expiredBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'extracted');
       expiredBanner.setScrollFactor(0);

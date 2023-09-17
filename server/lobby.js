@@ -30,6 +30,36 @@ const rand = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const names = [
+  'NeoX',
+  'Trinix',
+  'Cypherion',
+  'Morpheon',
+  'Zenix',
+  'Byteblade',
+  'DataDyne',
+  'Synthra',
+  'Virelia',
+  'Codex',
+  'Netshade',
+  'Pixelon',
+  'Wirelyn',
+  'Cryptos',
+  'Logiclyn',
+  'Virtuon',
+];
+
+const genName = () => {
+  var takenNames = Object.values(gameState.players).map((player) => player.name);
+
+  let randomName;
+  do {
+    randomName = names[Math.floor(Math.random() * names.length)];
+  } while (takenNames.includes(randomName));
+
+  return randomName;
+}
+
 const getStartingPosition = () => {
   const zeroIndices = [];
   LEVEL.forEach((row, rowIndex) => {
@@ -95,11 +125,14 @@ export const addToLobby = (ws, clientId) => {
     lifetime: PLAYER_LIFETIME,
     score: 0,
     health: 100,
+    name: genName(),
   };
 
   lobby.timeouts[clientId] = setTimeout(() => {
-    gameState.players[clientId].expired = true;
-    gameState.players[clientId].killed = true;
+    if (gameState.players[clientId] && !gameState.players[clientId].killed) {
+      gameState.players[clientId].expired = true;
+      gameState.players[clientId].killed = true;
+    }
   }, PLAYER_LIFETIME)
 
   gameState.players[clientId] = player;
@@ -173,6 +206,10 @@ export const pickUpPickup = (clientId, pickupId) => {
 export const processHit = (clientId, killedById) => {
   const player = gameState.players[clientId];
   if (!player) {
+    return;
+  }
+
+  if (player.expired) {
     return;
   }
 
