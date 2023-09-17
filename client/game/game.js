@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Phaser from 'phaser';
 import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE, SPRINT_METER_AMOUNT } from './constants';
-import { localState, gameState, fireWeapon, pickUpPickup, die } from './serverConnection';
+import { localState, gameState, fireWeapon, pickUpPickup, processHit } from './serverConnection';
 
 const viewState = {
   playerSprites: {},
@@ -145,10 +145,13 @@ const renderBullets = (time, delta, scene) => {
       destroyedIndexes.push(index);
     }
 
-    if (!localState.killed && projectile.owner !== localState.clientId && isCollidingWithPlayer(projectile.x, projectile.y)) {
-      localState.killed = true;
-      die(projectile.owner);
+    if (!localState.iFrame && projectile.owner !== localState.clientId && isCollidingWithPlayer(projectile.x, projectile.y)) {
+      localState.iFrame = true;
+      processHit(projectile.owner);
       scene.sound.play('oof');
+      setTimeout(() => {
+        localState.iFrame = false;
+      }, 500);
     }
   });
 
@@ -251,7 +254,6 @@ const renderTimer = (scene) => {
  */
 const renderScore = (scene) => {
   const { myPlayer } = localState;
-  let score = myPlayer.score ?? 0;
 
   let text = 'Lobby: \n';
   const players = Object.values(gameState.players);
@@ -320,6 +322,40 @@ const renderPickups = (scene) => {
     localState.collectedPickups = localState.collectedPickups.filter((id) => id !== pickupId);
     delete viewState.pickups[pickupId];
   }
+}
+
+const renderHealth = (scene) => {
+  if (!localState.myPlayer) {
+    return;
+  }
+  if (!gameState.players[localState.clientId]) {
+    return;
+  }
+
+  var x = scene.scale.width - 150;
+  var y = scene.scale.height - 50;
+
+  if (!viewState.healthBar) {
+    const barBackground = scene.add.graphics();
+    barBackground.fillStyle(0xFF0000, 1);
+    barBackground.fillRect(x, y, 100, 20);
+    barBackground.setScrollFactor(0);
+
+    // Create the health bar fill (the actual health representation)
+    const barFill = scene.add.graphics();
+    barFill.fillStyle(0x00FF00, 1);
+    barFill.fillRect(x, y, 100, 20);
+    barFill.setScrollFactor(0);
+
+    viewState.healthBar = {
+      background: barBackground,
+      fill: barFill,
+    };
+  }
+
+  viewState.healthBar.fill.clear();
+  viewState.healthBar.fill.fillStyle(0x00FF00, 1);
+  viewState.healthBar.fill.fillRect(x, y, gameState.players[localState.clientId].health, 20)
 }
 
 /**
@@ -408,4 +444,5 @@ export function gameTick(time, delta, scene) {
 
   doMovement(time, delta, scene);
   renderBullets(time, delta, scene);
+  renderHealth(scene);
 }

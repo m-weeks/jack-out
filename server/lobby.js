@@ -94,6 +94,7 @@ export const addToLobby = (ws, clientId) => {
     expired: false,
     lifetime: PLAYER_LIFETIME,
     score: 0,
+    health: 100,
   };
 
   lobby.timeouts[clientId] = setTimeout(() => {
@@ -169,13 +170,18 @@ export const pickUpPickup = (clientId, pickupId) => {
   player.score += 1;
 };
 
-export const killPlayer = (clientId, killedById) => {
+export const processHit = (clientId, killedById) => {
   const player = gameState.players[clientId];
   if (!player) {
     return;
   }
 
-  player.killed = true;
+  player.health = Math.max(0, player.health - 34);
+
+  if (player.health === 0) {
+    player.killed = true;
+  }
+
   
   const killer = gameState.players[killedById];
   if (killer) {

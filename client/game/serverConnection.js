@@ -11,7 +11,7 @@ export const localState = {
   loaded: false,
   clientId: undefined,
   myPlayer: null,
-  killed: false,
+  iFrame: false,
   shooting: false,
   lastShotTime: 0,
   sprinting: false,
@@ -75,8 +75,8 @@ export const pickUpPickup = (pickupId) => {
   sendState('PICKUP', pickupId);
 }
 
-export const die = (killedById) => {
-  sendState('DIE', killedById);
+export const processHit = (hitById) => {
+  sendState('HIT', hitById);
 }
 
 setInterval(() => {
