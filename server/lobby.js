@@ -1,8 +1,9 @@
 import _ from 'lodash';
-import { BULLET_VELOCITY, LEVEL, TILE_SIZE, LOBBY_SIZE } from './constants';
+import { BULLET_VELOCITY, LEVEL, TILE_SIZE, LOBBY_SIZE, PLAYER_LIFETIME } from './constants';
 
 const lobby = {
   clients: {},
+  timeouts: {},
 };
 
 const initialGameState = {
@@ -59,7 +60,14 @@ export const addToLobby = (ws, clientId) => {
     angle: 0,
     killed: false,
     id: clientId,
+    expired: false,
+    lifetime: PLAYER_LIFETIME,
   };
+
+  lobby.timeouts[clientId] = setTimeout(() => {
+    gameState.players[clientId].expired = true;
+    gameState.players[clientId].killed = true;
+  }, PLAYER_LIFETIME)
 
   gameState.players[clientId] = player;
 
@@ -76,9 +84,11 @@ export const removeFromLobby = (clientId) => {
 }
 
 export const updatePlayerState = (clientId, newPlayerState) => {
+  const prevState = gameState.players[clientId];
   gameState.players[clientId] = {
-    ...gameState.players[clientId],
+    ...prevState,
     ...newPlayerState,
+    killed: prevState.killed || newPlayerState.killed, // Do not allow un-killing. Zombies are no bueno
     id: clientId, // ensure clientId is not overwritten
   }
 };

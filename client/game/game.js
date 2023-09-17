@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Phaser from 'phaser';
 import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE } from './constants';
 import { localState, gameState, fireWeapon } from './serverConnection';
 
@@ -38,7 +39,7 @@ const isCollidingWithPlayer = (x, y) => {
 };
 
 const doMovement = (delta, scene) => {
-  if (localState.killed) {
+  if (localState.myPlayer.killed) {
     return;
   }
 
@@ -114,7 +115,7 @@ const renderBullets = (time, delta, scene) => {
     }
 
     if (projectile.owner !== localState.clientId && isCollidingWithPlayer(projectile.x, projectile.y)) {
-      localState.killed = true;
+      localState.myPlayer.killed = true;
     }
   });
 
@@ -157,6 +158,9 @@ const renderPlayers = (scene) => {
   const otherPlayers = Object.values(_.omit(gameState.players, localState.clientId));
 
   otherPlayers.forEach((player) => {
+    if (player.killed) {
+      playerSprites[player.id].setTexture('playerDead');
+    }
     playerSprites[player.id].setPosition(player.x, player.y);
     playerSprites[player.id].setRotation(player.angle);
   });
@@ -178,10 +182,51 @@ const renderPlayers = (scene) => {
  * 
  * @param {Phaser.Scene} scene 
  */
+const renderTimer = (scene) => {
+  if (viewState.timer) {
+    return;
+  }
+
+  const { myPlayer } = localState;
+
+  let seconds = Math.floor(myPlayer.lifetime / 1000);
+
+  const timer = scene.add.text(10, 10, seconds, { fontSize: '32px', fill: '#fff' });
+  timer.setScrollFactor(0);
+
+  var event = scene.time.addEvent({
+    delay: 1000,
+    loop: true,
+    callback: () => {
+      seconds = Math.max(0, --seconds);
+      timer.setText(seconds);
+
+      if (seconds === 0) {
+        event.destroy();
+      }
+    }
+  });
+
+  viewState.timer = timer;
+}
+
+/**
+ * 
+ * @param {Phaser.Scene} scene 
+ */
 export function init(scene) {
   const map = scene.make.tilemap({ data: LEVEL, tileWidth: TILE_SIZE, tileHeight: TILE_SIZE });
   const tiles = map.addTilesetImage('tiles');
   const layer = map.createLayer(0, tiles, 0, 0);
+}
+
+const syncPlayer = () => {
+  const currentPlayerState = gameState.players[localState.clientId];
+
+  if (localState.myPlayer) {
+    localState.myPlayer.killed = currentPlayerState.killed;
+    localState.myPlayer.expired = currentPlayerState.expired;
+  }
 }
 
 /**
@@ -192,9 +237,18 @@ export function init(scene) {
  * @returns 
  */
 export function gameTick(time, delta, scene) {
-  renderPlayers(scene);
+  if (!localState.loaded) {
+    return;
+  }
 
-  if (localState.killed) {
+  syncPlayer();
+
+  renderPlayers(scene);
+  renderTimer(scene);
+
+  const currentPlayerState = gameState.players[localState.clientId];
+
+  if (currentPlayerState.killed) {
     var killedBanner = scene.add.image(scene.scale.width / 2.0, scene.scale.height / 2.0, 'killed');
     killedBanner.setScrollFactor(0);
   }

@@ -33,6 +33,7 @@ const game = new Phaser.Game(config);
 
 function preload() {
   this.load.image('player', '/assets/token.png');
+  this.load.image('playerDead', '/assets/token_dead.png');
   this.load.image('bullet', '/assets/bullet.png');
   this.load.image('killed', '/assets/killed.png');
   this.load.image('tiles', '/assets/tiles.png');
