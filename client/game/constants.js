@@ -1,5 +1,6 @@
-export const PLAYER_VELOCITY = 400;
+export const PLAYER_VELOCITY = 300;
 export const BULLET_COOLDOWN = 400;
+export const SPRINT_METER_AMOUNT = 100;
 export const TILE_SIZE = 160;
 export const PLAYER_SIZE = 40;
 export const LEVEL = [

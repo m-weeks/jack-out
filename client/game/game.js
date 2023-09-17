@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Phaser from 'phaser';
-import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE } from './constants';
+import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE, SPRINT_COOLDOWN, SPRINT_DURATION, SPRINT_METER_AMOUNT } from './constants';
 import { localState, gameState, fireWeapon, pickUpPickup, die } from './serverConnection';
 
 const viewState = {
@@ -39,7 +39,7 @@ const isCollidingWithPlayer = (x, y, range = PLAYER_SIZE) => {
   return false;
 };
 
-const doMovement = (delta, scene) => {
+const doMovement = (time, delta, scene) => {
   if (localState.myPlayer.killed) {
     return;
   }
@@ -51,11 +51,27 @@ const doMovement = (delta, scene) => {
       left: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
       right: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
       space: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
+      shift: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT),
       pointer: scene.input.activePointer,
     };
   }
 
   const { keys } = viewState;
+
+  if (keys.shift.isDown && localState.sprintMeter > 0) {
+    localState.sprintMeter = Math.max(0, localState.sprintMeter - (delta * 0.1));
+    localState.sprinting = true;
+    if (localState.sprintMeter === 0) {
+      localState.sprinting = false;
+    }
+  } else if (!keys.shift.isDown) {
+    localState.sprinting = false;
+  }
+
+  const sprintModifier = localState.sprinting ? 1.5 : 1;
+
+  // restore a little bit of sprint meter
+  localState.sprintMeter = Math.min(SPRINT_METER_AMOUNT, localState.sprintMeter + ((delta * 0.10) / 2));
 
   const { myPlayer: player } = localState;
 
@@ -64,14 +80,14 @@ const doMovement = (delta, scene) => {
 
   // Calculate the new position based on key presses
   if (keys.left.isDown) {
-    player.x -= PLAYER_VELOCITY * (delta / 1000);
+    player.x -= PLAYER_VELOCITY * (delta / 1000) * sprintModifier;
   } else if (keys.right.isDown) {
-    player.x += PLAYER_VELOCITY * (delta / 1000);
+    player.x += PLAYER_VELOCITY * (delta / 1000) * sprintModifier;
   }
   if (keys.up.isDown) {
-    player.y -= PLAYER_VELOCITY * (delta / 1000);
+    player.y -= PLAYER_VELOCITY * (delta / 1000) * sprintModifier;
   } else if (keys.down.isDown) {
-    player.y += PLAYER_VELOCITY * (delta / 1000);
+    player.y += PLAYER_VELOCITY * (delta / 1000) * sprintModifier;
   }
 
   // If player would collide with a wall ignore their movement
@@ -347,6 +363,6 @@ export function gameTick(time, delta, scene) {
     killedBanner.setScrollFactor(0);
   }
 
-  doMovement(delta, scene);
+  doMovement(time, delta, scene);
   renderBullets(time, delta, scene);
 }

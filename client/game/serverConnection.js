@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { SPRINT_METER_AMOUNT } from './constants';
 
 // A local copy of the game state. Used as the client's source of truth. Will be periodically updated by the server
 export const gameState = {
@@ -13,6 +14,8 @@ export const localState = {
   killed: false,
   shooting: false,
   lastShotTime: 0,
+  sprinting: false,
+  sprintMeter: SPRINT_METER_AMOUNT,
   projectiles: [],
   pickups: [],
   collectedPickups: [],
