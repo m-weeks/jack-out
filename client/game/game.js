@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Phaser from 'phaser';
-import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE, SPRINT_COOLDOWN, SPRINT_DURATION, SPRINT_METER_AMOUNT } from './constants';
+import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE, SPRINT_METER_AMOUNT } from './constants';
 import { localState, gameState, fireWeapon, pickUpPickup, die } from './serverConnection';
 
 const viewState = {
