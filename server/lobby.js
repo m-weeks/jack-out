@@ -180,6 +180,8 @@ export const killPlayer = (clientId, killedById) => {
   const killer = gameState.players[killedById];
   if (killer) {
     killer.score += player.score;
+    // Take all of the players score
+    player.score = 0;
   }
 }
 
