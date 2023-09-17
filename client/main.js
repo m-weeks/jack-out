@@ -37,6 +37,7 @@ function preload() {
   this.load.image('bullet', '/assets/bullet.png');
   this.load.image('killed', '/assets/killed.png');
   this.load.image('tiles', '/assets/tiles.png');
+  this.load.image('dosh', '/assets/dosh.png');
 }
 
 // Resize game if window changes

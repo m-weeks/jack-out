@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { BULLET_VELOCITY, LEVEL, TILE_SIZE, LOBBY_SIZE, PLAYER_LIFETIME } from './constants';
+import { BULLET_VELOCITY, LEVEL, TILE_SIZE, LOBBY_SIZE, PLAYER_LIFETIME, MAX_PICKUPS } from './constants';
 
 const lobby = {
   clients: {},
@@ -8,6 +8,7 @@ const lobby = {
 
 const initialGameState = {
   players: {},
+  pickups: [],
 };
 
 const gameState = _.cloneDeep(initialGameState);
@@ -44,6 +45,36 @@ const getStartingPosition = () => {
   return [x * TILE_SIZE + (TILE_SIZE / 2), y * TILE_SIZE + (TILE_SIZE / 2)];
 };
 
+const spawnPickup = () => {
+  if (gameState.pickups.length >= MAX_PICKUPS) {
+    return;
+  }
+
+  let zeroIndices = [];
+  LEVEL.forEach((row, rowIndex) => {
+    row.forEach((col, colIndex) => {
+      if (col === 0) {
+        zeroIndices.push([colIndex, rowIndex]);
+      }
+    });
+  });
+  zeroIndices = zeroIndices.filter((indexPair) => {
+    const taken = gameState.pickups.find((pickup) => pickup.x === indexPair[0] && pickup.y === indexPair[1]);
+    return !taken;
+  });
+
+  const randomIndex = rand(0, zeroIndices.length - 1);
+  const [x, y] = zeroIndices[randomIndex];
+
+  console.log('SPAWNING PICKUP');
+
+  gameState.pickups.push({
+    x,
+    y,
+    id: _.uniqueId('pickup')
+  });
+}
+
 export const addToLobby = (ws, clientId) => {
   if (Object.keys(lobby.clients).length >= LOBBY_SIZE) {
     console.log('LOBBY FULL, REJECTING');
@@ -62,6 +93,7 @@ export const addToLobby = (ws, clientId) => {
     id: clientId,
     expired: false,
     lifetime: PLAYER_LIFETIME,
+    score: 0,
   };
 
   lobby.timeouts[clientId] = setTimeout(() => {
@@ -77,14 +109,16 @@ export const addToLobby = (ws, clientId) => {
 export const removeFromLobby = (clientId) => {
   delete gameState.players[clientId];
   delete lobby.clients[clientId];
-
-  if (getNumPlayers() <= 1) {
-    _.assign(gameState, _.cloneDeep(_.omit(initialGameState, 'players')));
-  }
+  clearTimeout(lobby.timeouts[clientId]);
+  delete lobby.timeouts[clientId];
 }
 
 export const updatePlayerState = (clientId, newPlayerState) => {
   const prevState = gameState.players[clientId];
+  if (!prevState) {
+    return;
+  }
+
   gameState.players[clientId] = {
     ...prevState,
     ...newPlayerState,
@@ -115,6 +149,26 @@ export const fireWeapon = (clientId) => {
   });
 }
 
+export const pickUpPickup = (clientId, pickupId) => {
+  const player = gameState.players[clientId];
+  if (!player) {
+    return;
+  }
+
+  const index = gameState.pickups.findIndex((pickup) => pickup.id === pickupId)
+  const pickup = gameState.pickups[index];
+  if (!pickup) {
+    return;
+  }
+
+  gameState.pickups[index].collected = true;
+
+  // @TODO: Investigate if this might cause race conditions
+  gameState.pickups.splice(index, 1);
+
+  player.score += 1;
+};
+
 export const updateClients = () => {
   broadcastMsg({
     type: 'SYNC',
@@ -125,3 +179,7 @@ export const updateClients = () => {
 setInterval(() => {
   updateClients();
 }, 30);
+
+setInterval(() => {
+  spawnPickup();
+}, 1000);

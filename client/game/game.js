@@ -1,10 +1,11 @@
 import _ from 'lodash';
 import Phaser from 'phaser';
 import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE } from './constants';
-import { localState, gameState, fireWeapon } from './serverConnection';
+import { localState, gameState, fireWeapon, pickUpPickup } from './serverConnection';
 
 const viewState = {
   playerSprites: {},
+  pickups: {},
   keys: null,
   layer: null,
 }
@@ -75,7 +76,6 @@ const doMovement = (delta, scene) => {
 
   // If player would collide with a wall ignore their movement
   if (isColliding(player.x, player.y)) {
-    console.log('COLLIDED');
     player.x = oldX;
     player.y = oldY;
   }
@@ -174,7 +174,7 @@ const renderPlayers = (scene) => {
   const oldSprites = _.omit(playerSprites, playerIds);
   for(var playerId in oldSprites) {
     oldSprites[playerId].destroy();
-    delete oldSprites[playerId];
+    delete playerSprites[playerId];
   }
 }
 
@@ -214,6 +214,56 @@ const renderTimer = (scene) => {
  * 
  * @param {Phaser.Scene} scene 
  */
+const renderScore = (scene) => {
+  const { myPlayer } = localState;
+  let score = myPlayer.score ?? 0;
+
+  if (viewState.scoreText) {
+    viewState.scoreText.setText(score);
+
+    return;
+  }
+
+  const scoreText = scene.add.text(scene.scale.width - 50, scene.scale.height - 50, score, { fontSize: '32px', fill: '#fff' });
+  scoreText.setScrollFactor(0);
+
+  viewState.scoreText = scoreText;
+}
+
+/**
+ * 
+ * @param {Phaser.Scene} scene 
+ */
+const renderPickups = (scene) => {
+  const { pickups } = localState;
+
+  pickups.forEach((pickup, index) => {
+    if (!(viewState.pickups[pickup.id])) {
+      let sprite = scene.physics.add.sprite(pickup.x * TILE_SIZE + (TILE_SIZE / 2), pickup.y * TILE_SIZE + (TILE_SIZE / 2), 'dosh');
+      viewState.pickups[pickup.id] = sprite;
+    }
+
+    const curSprite = viewState.pickups[pickup.id];
+
+    if (!pickups[index].collected && isCollidingWithPlayer(curSprite.x, curSprite.y)) {
+      pickups[index].collected = true;
+      pickUpPickup(pickup.id);
+    }
+  });
+
+  // Clean old sprites
+  const pickupIds = gameState.pickups.map((pickup) => pickup.id);
+  const oldSprites = _.omit(viewState.pickups, pickupIds);
+  for(var pickupId in oldSprites) {
+    oldSprites[pickupId].destroy();
+    delete viewState.pickups[pickupId];
+  }
+}
+
+/**
+ * 
+ * @param {Phaser.Scene} scene 
+ */
 export function init(scene) {
   const map = scene.make.tilemap({ data: LEVEL, tileWidth: TILE_SIZE, tileHeight: TILE_SIZE });
   const tiles = map.addTilesetImage('tiles');
@@ -226,6 +276,8 @@ const syncPlayer = () => {
   if (localState.myPlayer) {
     localState.myPlayer.killed = currentPlayerState.killed;
     localState.myPlayer.expired = currentPlayerState.expired;
+    localState.myPlayer.score = currentPlayerState.score;
+    localState.pickups = _.cloneDeep(gameState.pickups);
   }
 }
 
@@ -244,7 +296,9 @@ export function gameTick(time, delta, scene) {
   syncPlayer();
 
   renderPlayers(scene);
+  renderPickups(scene);
   renderTimer(scene);
+  renderScore(scene);
 
   const currentPlayerState = gameState.players[localState.clientId];
 

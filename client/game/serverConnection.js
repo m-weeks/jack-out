@@ -12,6 +12,7 @@ export const localState = {
   shooting: false,
   lastShotTime: 0,
   projectiles: [],
+  pickups: [],
 }
 
 const socket = new WebSocket('ws://localhost:3000');
@@ -61,6 +62,10 @@ export const syncMovement = () => {
 
 export const fireWeapon = () => {
   sendState('FIRE_WEAPON');
+}
+
+export const pickUpPickup = (pickupId) => {
+  sendState('PICKUP', pickupId);
 }
 
 setInterval(() => {

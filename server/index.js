@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { addToLobby, fireWeapon, removeFromLobby, updatePlayerState } from './lobby';
+import { addToLobby, fireWeapon, pickUpPickup, removeFromLobby, updatePlayerState } from './lobby';
 
 const clients = new Map();
 
@@ -28,6 +28,9 @@ const server = Bun.serve({
         //sanitize
         const scrubbed = _.pick(msg.data, ['x', 'y', 'id', 'killed', 'angle']);
         updatePlayerState(clientId, scrubbed);
+      }
+      if (msg.type === 'PICKUP') {
+        pickUpPickup(clientId, msg.data);
       }
       if (msg.type === 'FIRE_WEAPON') {
         fireWeapon(clientId);
