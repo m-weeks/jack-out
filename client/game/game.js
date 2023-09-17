@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Phaser from 'phaser';
 import { BULLET_COOLDOWN, PLAYER_VELOCITY, TILE_SIZE, LEVEL, PLAYER_SIZE } from './constants';
-import { localState, gameState, fireWeapon, pickUpPickup } from './serverConnection';
+import { localState, gameState, fireWeapon, pickUpPickup, die } from './serverConnection';
 
 const viewState = {
   playerSprites: {},
@@ -19,18 +19,18 @@ const isColliding = (x, y) => {
   return Boolean(tile);
 }
 
-const rangify = (coordinate) => {
+const rangify = (coordinate, range) => {
   return [
-    coordinate - (PLAYER_SIZE / 2),
-    coordinate + (PLAYER_SIZE / 2),
+    coordinate - (range / 2),
+    coordinate + (range / 2),
   ];
 }
 
-const isCollidingWithPlayer = (x, y) => {
+const isCollidingWithPlayer = (x, y, range = PLAYER_SIZE) => {
   const { myPlayer } = localState;
 
-  const xBounds = rangify(myPlayer.x);
-  const yBounds = rangify(myPlayer.y);
+  const xBounds = rangify(myPlayer.x, range);
+  const yBounds = rangify(myPlayer.y, range);
 
   // If within the x and y bounds
   if (x > xBounds[0] && x < xBounds[1] && y > yBounds[0] && y < yBounds[1]) {
@@ -114,8 +114,9 @@ const renderBullets = (time, delta, scene) => {
       destroyedIndexes.push(index);
     }
 
-    if (projectile.owner !== localState.clientId && isCollidingWithPlayer(projectile.x, projectile.y)) {
-      localState.myPlayer.killed = true;
+    if (!localState.killed && projectile.owner !== localState.clientId && isCollidingWithPlayer(projectile.x, projectile.y)) {
+      localState.killed = true;
+      die(projectile.owner);
     }
   });
 
@@ -245,7 +246,7 @@ const renderPickups = (scene) => {
 
     const curSprite = viewState.pickups[pickup.id];
 
-    if (!pickups[index].collected && isCollidingWithPlayer(curSprite.x, curSprite.y)) {
+    if (!pickups[index].collected && isCollidingWithPlayer(curSprite.x, curSprite.y, 80)) {
       pickups[index].collected = true;
       pickUpPickup(pickup.id);
     }

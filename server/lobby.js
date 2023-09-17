@@ -169,6 +169,20 @@ export const pickUpPickup = (clientId, pickupId) => {
   player.score += 1;
 };
 
+export const killPlayer = (clientId, killedById) => {
+  const player = gameState.players[clientId];
+  if (!player) {
+    return;
+  }
+
+  player.killed = true;
+  
+  const killer = gameState.players[killedById];
+  if (killer) {
+    killer.score += player.score;
+  }
+}
+
 export const updateClients = () => {
   broadcastMsg({
     type: 'SYNC',

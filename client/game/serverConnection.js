@@ -9,6 +9,7 @@ export const localState = {
   loaded: false,
   clientId: undefined,
   myPlayer: null,
+  killed: false,
   shooting: false,
   lastShotTime: 0,
   projectiles: [],
@@ -66,6 +67,10 @@ export const fireWeapon = () => {
 
 export const pickUpPickup = (pickupId) => {
   sendState('PICKUP', pickupId);
+}
+
+export const die = (killedById) => {
+  sendState('DIE', killedById);
 }
 
 setInterval(() => {
