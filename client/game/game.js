@@ -75,8 +75,10 @@ const doMovement = (delta, scene) => {
   }
 
   // If player would collide with a wall ignore their movement
-  if (isColliding(player.x, player.y)) {
+  if (isColliding(player.x, oldY)) {
     player.x = oldX;
+  }
+  if (isColliding(oldX, player.y)) {
     player.y = oldY;
   }
 

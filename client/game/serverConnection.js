@@ -16,7 +16,7 @@ export const localState = {
   pickups: [],
 }
 
-const socket = new WebSocket('ws://localhost:3000');
+const socket = new WebSocket('ws://gamejam.weeks.guru:3000');
 
 socket.onopen = (e) => {
   console.log('Connected');
