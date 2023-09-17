@@ -45,6 +45,7 @@ function preload() {
 
   this.load.audio('shot', '/assets/sounds/glock.wav');
   this.load.audio('pickup', '/assets/sounds/cash.wav');
+  this.load.audio('oof', '/assets/sounds/oof.wav');
 }
 
 // Resize game if window changes

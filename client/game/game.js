@@ -148,6 +148,7 @@ const renderBullets = (time, delta, scene) => {
     if (!localState.killed && projectile.owner !== localState.clientId && isCollidingWithPlayer(projectile.x, projectile.y)) {
       localState.killed = true;
       die(projectile.owner);
+      scene.sound.play('oof');
     }
   });
 
@@ -174,7 +175,7 @@ const renderPlayers = (scene) => {
     // Render a sprite if they already haven't
     if (!playerSprites[player.id]) {
       let sprite = scene.physics.add.sprite(player.x, player.y, 'player');
-      sprite.setScale(0.1);
+      sprite.setScale(0.2);
       playerSprites[player.id] = sprite;
 
       playerSprites[player.id].setPosition(player.x, player.y);
@@ -274,6 +275,7 @@ const renderPickups = (scene) => {
   pickups.forEach((pickup, index) => {
     if (!(viewState.pickups[pickup.id])) {
       let sprite = scene.physics.add.sprite(pickup.x * TILE_SIZE + (TILE_SIZE / 2), pickup.y * TILE_SIZE + (TILE_SIZE / 2), 'dosh');
+      sprite.setScale(0.1);
       viewState.pickups[pickup.id] = sprite;
     }
 
